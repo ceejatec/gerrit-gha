@@ -1,0 +1,56 @@
+version: '3.7'
+
+# Suggested deployment command:
+#   docker --host mega4.build.couchbase.com stack deploy --with-registry-auth -c swarm.yaml gerrit
+# All services, networks, etc. will then get an "gerrit_" prefix,
+
+services:
+  gerrit:
+    deploy:
+      replicas: 1
+      # Uncomment the following to perform initial deployment
+      #restart_policy:
+      #  condition: none
+    image: gerritcodereview/gerrit:3.10.2
+    volumes:
+      - ./gerrit-data/.ssh:/var/gerrit/.ssh
+      - ./gerrit-data/cache:/var/gerrit/cache
+      - ./gerrit-data/data:/var/gerrit/data
+      - ./gerrit-data/db:/var/gerrit/db
+      - ./gerrit-data/etc:/var/gerrit/etc
+      - ./gerrit-data/git:/var/gerrit/git
+      - ./gerrit-data/hooks:/var/gerrit/hooks
+      - ./gerrit-data/index:/var/gerrit/index
+      - ./gerrit-data/lib:/var/gerrit/lib
+      - ./gerrit-data/logs:/var/gerrit/logs
+      - ./gerrit-data/plugins:/var/gerrit/plugins
+      - ./gerrit-data/static:/var/gerrit/static
+    ports:
+      - "29418:29418"
+      - "8080:8080"
+    environment:
+      - CANONICAL_WEB_URL=http://127.0.0.1:8080/
+    networks:
+      - gerrit
+    # Uncomment the following line to perform initial deployment
+    #command: init
+
+  rabbitmq:
+    deploy:
+      replicas: 1
+    image: rabbitmq:3-management
+    volumes:
+      - rabbitmq-volume:/var/lib/rabbitmq
+    networks:
+      - gerrit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  rabbitmq-volume:
+
+networks:
+  gerrit:
+    driver: overlay
+    attachable: true

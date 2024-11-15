@@ -1,0 +1,18 @@
+#!/bin/bash
+
+mkdir -p \
+  gerrit-data/.ssh \
+  gerrit-data/bin \
+  gerrit-data/cache \
+  gerrit-data/data \
+  gerrit-data/db \
+  gerrit-data/etc \
+  gerrit-data/git \
+  gerrit-data/hooks \
+  gerrit-data/index \
+  gerrit-data/lib \
+  gerrit-data/logs \
+  gerrit-data/plugins \
+  gerrit-data/static
+
+docker stack deploy --detach=true --with-registry-auth -c swarm.yaml gerrit
