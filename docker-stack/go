@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/bin/bash -e
+
+if [ ! -x nats ]; then
+    GOBIN=$(pwd) go install github.com/nats-io/natscli/nats@latest
+fi
 
 mkdir -p \
   gerrit-data/.ssh \
@@ -13,6 +17,8 @@ mkdir -p \
   gerrit-data/lib \
   gerrit-data/logs \
   gerrit-data/plugins \
-  gerrit-data/static
+  gerrit-data/static \
+  jenkins-home \
+  nats-data
 
 docker stack deploy --detach=true --with-registry-auth -c swarm.yaml gerrit

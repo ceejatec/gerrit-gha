@@ -25,32 +25,44 @@ services:
       - ./gerrit-data/logs:/var/gerrit/logs
       - ./gerrit-data/plugins:/var/gerrit/plugins
       - ./gerrit-data/static:/var/gerrit/static
+      - ./nats-context:/var/gerrit/.config/nats
+      - ./nats:/usr/local/bin/nats
     ports:
       - "29418:29418"
       - "8080:8080"
+    networks:
+      - nats
     environment:
       - CANONICAL_WEB_URL=http://127.0.0.1:8080/
-    networks:
-      - gerrit
     # Uncomment the following line to perform initial deployment
     #command: init
 
-  rabbitmq:
+  jenkins:
     deploy:
       replicas: 1
-    image: rabbitmq:3-management
-    volumes:
-      - rabbitmq-volume:/var/lib/rabbitmq
-    networks:
-      - gerrit
+    image: jenkins/jenkins:2.462.2
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "8081:8080"
+    networks:
+      - nats
+    volumes:
+      - ./jenkins-home:/var/jenkins_home
+      - ./nats-context:/var/jenkins_home/.config/nats
+      - ./nats:/usr/local/bin/nats
 
-volumes:
-  rabbitmq-volume:
+  nats:
+    deploy:
+      replicas: 1
+    image: nats:2.10.3
+    command: --jetstream --store_dir /var/lib/nats
+    user: 1000:1000
+    volumes:
+      - ./nats-data:/var/lib/nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - nats
 
 networks:
-  gerrit:
-    driver: overlay
-    attachable: true
+  nats:
