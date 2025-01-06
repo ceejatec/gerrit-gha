@@ -11,6 +11,18 @@ services:
       # Uncomment the following to perform initial deployment
       #restart_policy:
       #  condition: none
+
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=gerrit_traefik"
+
+        - "traefik.http.routers.gerrit_http.entrypoints=web"
+        - "traefik.http.routers.gerrit_http.rule=Host(`review.local`)"
+        - "traefik.http.routers.gerrit_http.service=gerrit"
+
+        - "traefik.http.services.gerrit.loadbalancer.server.port=8080"
+        - "traefik.http.services.gerrit.loadbalancer.server.scheme=http"
+
     image: gerritcodereview/gerrit:3.10.2
     volumes:
       - ./gerrit-data/.ssh:/var/gerrit/.ssh
@@ -29,11 +41,11 @@ services:
       - ./nats:/usr/local/bin/nats
     ports:
       - "29418:29418"
-      - "8080:8080"
     networks:
       - nats
+      - traefik
     environment:
-      - CANONICAL_WEB_URL=http://127.0.0.1:8080/
+      - CANONICAL_WEB_URL=http://review.local
     # Uncomment the following line to perform initial deployment
     #command: init
 
@@ -49,6 +61,28 @@ services:
       - ./jenkins-home:/var/jenkins_home
       - ./nats-context:/var/jenkins_home/.config/nats
       - ./nats:/usr/local/bin/nats
+
+  traefik:
+    image: traefik:v3.2.3
+    command:
+      - "--log.level=DEBUG"
+      - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
+      - "--providers.swarm.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      - "--api.insecure=true"
+    init: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 80:80
+      - 443:443
+      - 6725:8080
+    deploy:
+      replicas: 1
+    networks:
+      - traefik
 
   nats:
     deploy:
@@ -66,3 +100,5 @@ services:
 
 networks:
   nats:
+  traefik:
+    attachable: true

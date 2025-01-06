@@ -5,6 +5,22 @@
 Ensure Docker is running, and run `docker swarm init` to enable Swarm
 mode.
 
+## Setting up hostnames
+
+The Gerrit instance assumes it is available at the DNS name
+`review.local`, and the stack's Traefik configuration assumes the same.
+You will have to add this to your `/etc/hosts` or similar, resolving to
+`127.0.0.1`.
+
+In theory we should be able to use `review.localhost` here, which will
+be automatically resolved to the loopback IP (at least it is on hosts
+using systemd-resolved for name resolution, and likely elsewhere).
+However systemd-resolved actually resolves this to `[::1]` as well as
+`127.0.0.1`, and clients like Chrome and `curl` tend to prefer the IPv6
+name. Unfortunately Docker's support for IPv6 is spotty at best, and
+Docker Swarm's support appears effectively non-existent. So,
+`/etc/hosts` hacks will have to do.
+
 ## Setting up the Gerrit instance
 
 Initializing the Gerrit config requires some manual intervention. First,
