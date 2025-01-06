@@ -62,6 +62,24 @@ services:
       - ./nats-context:/var/jenkins_home/.config/nats
       - ./nats:/usr/local/bin/nats
 
+  nginx:
+    image: nginx:latest
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=gerrit_traefik"
+
+        - "traefik.http.routers.nginx_http.entrypoints=web"
+        - "traefik.http.routers.nginx_http.rule=Host(`review.local`)"
+        - "traefik.http.routers.nginx_http.rule=PathPrefix(`/static`)"
+        - "traefik.http.routers.nginx_http.service=nginx"
+
+        - "traefik.http.services.nginx.loadbalancer.server.port=80"
+        - "traefik.http.services.nginx.loadbalancer.server.scheme=http"
+
+    networks:
+      - traefik
+
   traefik:
     image: traefik:v3.2.3
     command:
