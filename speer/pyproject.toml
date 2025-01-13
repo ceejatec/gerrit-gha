@@ -19,7 +19,17 @@ speer = "speer.main:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.taskipy.tasks]
+create-checks-jsonschema = "npx ts-json-schema-generator --path ~/co/isrc/gerrit/polygerrit-ui/app/api/checks.ts > /tmp/checks.jsonschema"
+create-checks-pydantic = "datamodel-codegen --input /tmp/checks.jsonschema --input-file-type=jsonschema --output src/speer/checks_datamodel.py --output-model-type pydantic_v2.BaseModel"
+create-speer-typescript = "pydantic2ts --module speer.speer_datamodel --output ../plugin/src/speer.ts --json2ts-cmd 'npx json-schema-to-typescript'"
+
+models = "task create-checks-jsonschema && task create-checks-pydantic && task create-speer-typescript"
+
 [dependency-groups]
 dev = [
+    "datamodel-code-generator>=0.26.4",
+    "pydantic-to-typescript>=2.0.0",
     "pytest>=8.3.4",
+    "taskipy>=1.14.1",
 ]

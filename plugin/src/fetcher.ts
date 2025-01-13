@@ -15,14 +15,13 @@
  */
 import {
     ChangeData,
-    CheckRun,
     ChecksProvider,
     ResponseCode,
-    RunStatus,
-    CheckResult
 } from '@gerritcodereview/typescript-api/checks';
 
 import { PluginApi } from '@gerritcodereview/typescript-api/plugin';
+
+import { SpeerRequest } from './speer';
 
 export class ChecksFetcher implements ChecksProvider {
   private plugin: PluginApi;
@@ -34,7 +33,20 @@ export class ChecksFetcher implements ChecksProvider {
   async fetch(data: ChangeData) {
     // Call /speer/ on the server to get the data
     try {
-      const response = await fetch('/speer/');
+      const response = await fetch('/speer/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'repo': data.changeInfo.project,
+          'branch': data.changeInfo.branch,
+          'changeNumber': data.changeInfo._number,
+          'patchsetNumber': data.patchsetNumber,
+          'patchsetSha': data.patchsetSha,
+          'commitMessage': data.commitMessage,
+        } satisfies SpeerRequest),
+      });
       if (response.status === 200) {
         const data = await response.json();
         return {
