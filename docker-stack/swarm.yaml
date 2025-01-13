@@ -75,6 +75,7 @@ services:
         - "traefik.http.routers.speer_http.rule=Host(`review.local`)"
         - "traefik.http.routers.speer_http.rule=PathPrefix(`/speer`)"
         - "traefik.http.routers.speer_http.service=speer"
+        - "traefik.http.routers.speer_http.priority=100"
 
         - "traefik.http.services.speer.loadbalancer.server.port=8000"
         - "traefik.http.services.speer.loadbalancer.server.scheme=http"

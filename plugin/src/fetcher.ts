@@ -32,21 +32,26 @@ export class ChecksFetcher implements ChecksProvider {
   }
 
   async fetch(data: ChangeData) {
-    let checkRuns: CheckRun[] = [];
-    let checkResults: CheckResult[] = [];
-    checkRuns.push({
-      patchset: data.patchsetNumber,
-      attempt: 1,
-      checkName: "my check name",
-      checkDescription: "my check description",
-      checkLink: "https://google.com/",
-      status: RunStatus.RUNNABLE,
-      statusLink: "https://microsoft.com/",
-      results: checkResults,
-    });
-    return {
-    responseCode: ResponseCode.OK,
-      runs: checkRuns,
-    };
+    // Call /speer/ on the server to get the data
+    try {
+      const response = await fetch('/speer/');
+      if (response.status === 200) {
+        const data = await response.json();
+        return {
+          responseCode: ResponseCode.OK,
+          runs: data,
+        };
+      } else {
+        return {
+          responseCode: ResponseCode.ERROR,
+          runs: [],
+        };
+      }
+    } catch (error) {
+      return {
+        responseCode: ResponseCode.ERROR,
+        runs: [],
+      };
+    }
   }
 }
