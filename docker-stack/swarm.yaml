@@ -62,20 +62,22 @@ services:
       - ./nats-context:/var/jenkins_home/.config/nats
       - ./nats:/usr/local/bin/nats
 
-  nginx:
-    image: nginx:latest
+  speer:
+    image: couchbasebuild/speer:latest
+    volumes:
+      - ../speer:/app
     deploy:
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=gerrit_traefik"
 
-        - "traefik.http.routers.nginx_http.entrypoints=web"
-        - "traefik.http.routers.nginx_http.rule=Host(`review.local`)"
-        - "traefik.http.routers.nginx_http.rule=PathPrefix(`/static`)"
-        - "traefik.http.routers.nginx_http.service=nginx"
+        - "traefik.http.routers.speer_http.entrypoints=web"
+        - "traefik.http.routers.speer_http.rule=Host(`review.local`)"
+        - "traefik.http.routers.speer_http.rule=PathPrefix(`/speer`)"
+        - "traefik.http.routers.speer_http.service=speer"
 
-        - "traefik.http.services.nginx.loadbalancer.server.port=80"
-        - "traefik.http.services.nginx.loadbalancer.server.scheme=http"
+        - "traefik.http.services.speer.loadbalancer.server.port=8000"
+        - "traefik.http.services.speer.loadbalancer.server.scheme=http"
 
     networks:
       - traefik
@@ -119,4 +121,3 @@ services:
 networks:
   nats:
   traefik:
-    attachable: true
